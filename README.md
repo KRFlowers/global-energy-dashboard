@@ -4,9 +4,9 @@
 
 ## Project Overview
 
-The global energy transition is widely covered in the news, often focusing on renewable growth and progress. This dashboard examines what the data actually shows about that progress — where it is real and significant, where it is overstated, and what the narrative leaves out.
+Renewable electricity has more than doubled its global share since 2000. Solar, wind, and hydro are generating a growing portion of the world's electricity and the pace is accelerating. Global renewable share has grown from roughly 19% to 32%, driven largely by solar and wind. Across 79 countries, the growth is consistent but the pace and mix vary widely.
 
-The analysis uses Our World in Data's energy dataset to explore how electricity generation has decarbonized globally between 2000 and 2024, how this compares to the broader energy system (transport, heating, industry, agriculture), and how the choice of fuel being replaced affects the climate impact of that transition.
+The analysis uses Our World in Data's energy dataset to explore how electricity generation has progressed globally between 2000 and 2024 as well as how this compares to the total energy system (transport, heating, industry, agriculture).  It also looks at how the choice of fuel being replaced affects the climate impact of that transition.
 
 The dashboard was built as an HTML artifact, initially prototyped in Claude Code and refined iteratively across the energy story, chart selection, color scheme, and layout. The goal was to clearly show the global energy mix over time.
 

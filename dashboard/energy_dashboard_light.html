@@ -61,7 +61,10 @@
   /* 5-card KPI row: 4 electricity sources + 1 total-energy card set apart by background + extra gap */
   .kpi-row{display:flex;gap:8px;align-items:stretch}
   .kpi-row .card{flex:1;min-width:0}
-  .kpi-row .card.kpi-distinct{background:#F5F0E8;margin-left:14px}
+  .kpi-row .card.kpi-distinct{background:#F5F0E8;margin-left:0;border-left:3px solid #b89a5e}
+  .kpi-row .kpi-divider{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 10px;gap:4px;flex-shrink:0}
+  .kpi-row .kpi-divider-line{width:1px;flex:1;background:var(--grid)}
+  .kpi-row .kpi-divider-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#b89a5e;white-space:nowrap;writing-mode:vertical-lr;transform:rotate(180deg)}
   .col-3{grid-column:span 3}
   .col-4{grid-column:span 4}
   .col-6{grid-column:span 6}
@@ -86,8 +89,6 @@
 <header>
   <div>
     <h1>Global Renewable Electricity, 2000–2024</h1>
-    <div class="header-question">How are countries moving toward renewables?</div>
-    <div class="header-subtitle">OWID energy subset · 79 countries · 2000–2024</div>
   </div>
   <div class="controls">
     <div class="filter-group">
@@ -128,8 +129,13 @@
       <div class="v" id="kpi-hydro">–</div>
       <div class="delta" id="kpi-hydro-d"></div>
     </div>
+    <div class="kpi-divider" title="Cards to the left show electricity only. This card covers all energy (electricity, heat, transport, industry).">
+      <div class="kpi-divider-line"></div>
+      <div class="kpi-divider-label">All energy</div>
+      <div class="kpi-divider-line"></div>
+    </div>
     <div class="card kpi kpi-distinct">
-      <h3>Renewables (total energy)</h3>
+      <h3>All energy renewables</h3>
       <div class="v" id="kpi-renew-te">–</div>
       <div class="delta" id="kpi-renew-te-d"></div>
     </div>
@@ -157,7 +163,7 @@
     <div class="sub" id="choroplethCaption" style="margin-top:6px;line-height:1.5">
       Hydro-dominant countries (Iceland, Norway, Brazil) cluster high regardless of policy.
     </div>
-    <div class="sub" style="margin-top:4px;font-size:10px;color:var(--muted)">Pale blue = low share. Deep blue = high. Outlined countries: no data reported.</div>
+    <div class="sub" style="margin-top:4px;font-size:10px;color:var(--muted)">Pale blue = low share. Deep blue = high. Outlined countries: no data reported. &nbsp;·&nbsp; <b>Click a country</b> to filter the dashboard.</div>
   </div>
 
   <!-- Right column top: Electricity mix over time (moved up from row 3) -->
@@ -497,11 +503,40 @@ function renderMap(selectedCountry, year) {
         maintainAspectRatio: false,
         showOutline: true,
         showGraticule: false,
+        onClick: (e, elements) => {
+          if (!elements || !elements.length) return;
+          const idx = elements[0].index;
+          const mapName = features[idx]?.properties?.name;
+          if (!mapName) return;
+          // Reverse MAP_NAME_ALIASES: find data country whose alias is this map name
+          const country = Object.keys(MAP_NAME_ALIASES).find(k => MAP_NAME_ALIASES[k] === mapName) || mapName;
+          if (!DATA.countries.includes(country)) return;
+          // Update region filter if needed so country appears in dropdown
+          const countryRegion = CONTINENT[country];
+          if (countryRegion && regionSel.value !== 'All regions' && regionSel.value !== countryRegion) {
+            regionSel.value = 'All regions';
+          }
+          populateCountrySelect(regionSel.value, country);
+          countrySel.value = country;
+          persistAndRender();
+        },
+        onHover: (e, elements) => {
+          if (e.native && e.native.target) {
+            const mapName = elements.length ? features[elements[0].index]?.properties?.name : null;
+            const country = mapName ? (Object.keys(MAP_NAME_ALIASES).find(k => MAP_NAME_ALIASES[k] === mapName) || mapName) : null;
+            e.native.target.style.cursor = (country && DATA.countries.includes(country)) ? 'pointer' : 'default';
+          }
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
             callbacks: {
-              title: (items) => items[0]?.raw?.feature?.properties?.name ?? '',
+              title: (items) => {
+                const name = items[0]?.raw?.feature?.properties?.name ?? '';
+                const country = Object.keys(MAP_NAME_ALIASES).find(k => MAP_NAME_ALIASES[k] === name) || name;
+                const clickable = DATA.countries.includes(country);
+                return clickable ? `${name} (click to filter)` : name;
+              },
               label: (c) => {
                 const v = c.raw && c.raw.value;
                 return v == null ? 'no data' : `${metricLabel}: ${v.toFixed(1)}% of electricity`;
