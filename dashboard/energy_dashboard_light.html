@@ -35,10 +35,15 @@
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI",Roboto,sans-serif}
-  header{padding:14px 20px;border-bottom:1px solid var(--grid);display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:14px;background:var(--panel)}
+  header{padding:14px 20px;border-bottom:1px solid var(--grid);display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:14px;background:var(--panel)}
   h1{margin:0;font-size:32px;font-weight:700;color:var(--ink);line-height:1.1}
+  .dashboard-subtitle{font-size:18px;font-weight:400;font-style:italic;color:var(--muted);margin-top:4px}
   .header-question{font-size:18px;font-weight:400;font-style:italic;color:var(--ink);margin-top:4px}
   .header-subtitle{font-size:12px;font-weight:400;color:var(--muted);margin-top:6px}
+  .filter-state-strip{padding:8px 0;border-top:1px solid var(--grid);border-bottom:1px solid var(--grid);background:transparent}
+  .filter-state{font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .filter-state-label{color:var(--muted);font-weight:400}
+  .filter-state-value{color:var(--ink);font-weight:600}
   .sub{color:var(--muted);font-size:13px}
   /* Filter group: small uppercase label above each dropdown, vertically stacked */
   .controls{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
@@ -54,6 +59,7 @@
   .card h3{margin:0 0 4px;font-size:13px;color:var(--ink);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
   .card .sub{font-size:11px}
   .kpi{padding:10px 12px}
+  .kpi-header-line{font-size:10px;color:var(--muted);margin-bottom:6px;line-height:1.3}
   .kpi .v{font-size:28px;font-weight:700;line-height:1.1}
   .kpi .l{font-size:12px;color:var(--muted)}
   .kpi .delta{font-size:11px;margin-top:4px;color:var(--muted)}
@@ -87,10 +93,11 @@
 <body>
 
 <header>
-  <div>
+  <div style="flex:1;display:flex;flex-direction:column;gap:6px">
     <h1>Global Renewable Electricity, 2000–2024</h1>
+    <div class="dashboard-subtitle">How are countries moving toward renewables?</div>
   </div>
-  <div class="controls">
+  <div class="controls" style="flex-shrink:0">
     <div class="filter-group">
       <label class="filter-label" for="region">Region</label>
       <select id="region"></select>
@@ -110,22 +117,22 @@
   <!-- KPIs — single horizontal row: 4 electricity-source cards + 1 total-energy card (visually distinct) -->
   <div class="kpi-row col-12">
     <div class="card kpi">
-      <h3>Renewables (electricity)</h3>
+      <h3>Electricity from Renewables</h3>
       <div class="v" id="kpi-renew-e">–</div>
       <div class="delta" id="kpi-renew-e-d"></div>
     </div>
     <div class="card kpi">
-      <h3>Solar (electricity)</h3>
+      <h3>Electricity from Solar</h3>
       <div class="v" id="kpi-solar">–</div>
       <div class="delta" id="kpi-solar-d"></div>
     </div>
     <div class="card kpi">
-      <h3>Wind (electricity)</h3>
+      <h3>Electricity from Wind</h3>
       <div class="v" id="kpi-wind">–</div>
       <div class="delta" id="kpi-wind-d"></div>
     </div>
     <div class="card kpi">
-      <h3>Hydro (electricity)</h3>
+      <h3>Electricity from Hydro</h3>
       <div class="v" id="kpi-hydro">–</div>
       <div class="delta" id="kpi-hydro-d"></div>
     </div>
@@ -135,9 +142,23 @@
       <div class="kpi-divider-line"></div>
     </div>
     <div class="card kpi kpi-distinct">
-      <h3>All energy renewables</h3>
+      <div class="kpi-header-line"><span style="font-style:italic">AND IN TOTAL ENERGY?</span> <span style="font-weight:300;opacity:0.8">(incl. transport, heat, industry)</span></div>
+      <h3>Total Energy from Renewables</h3>
       <div class="v" id="kpi-renew-te">–</div>
       <div class="delta" id="kpi-renew-te-d"></div>
+    </div>
+  </div>
+
+  <!-- Filter state indicator -->
+  <div class="filter-state-strip col-12">
+    <div class="filter-state" id="filterState">
+      <span class="filter-state-label">Showing:</span>
+      <span class="filter-state-value" id="filterStateRegion"></span>
+      <span id="filterStateSeparator1">·</span>
+      <span class="filter-state-value" id="filterStateCountry"></span>
+      <span id="filterStateSeparator2">·</span>
+      <span class="filter-state-value" id="filterStateYear"></span>
+      <span id="filterStateHint" style="font-size:10px;color:var(--muted);font-style:italic;margin-left:4px">(change filters at right)</span>
     </div>
   </div>
 
@@ -239,26 +260,6 @@
       </div>
     </div>
     <div class="sub" style="margin-top:10px;font-size:11px;line-height:1.45;text-align:center">Same three categories, dramatically different mixes. Electricity is one-fifth of total energy — and the cleaner fifth.</div>
-  </div>
-
-  <!-- Dashboard narrative / notes -->
-  <div class="card col-12" id="notes">
-    <h3>Dashboard story &amp; notes</h3>
-    <div style="font-size:13px;line-height:1.55;color:var(--ink);max-width:980px">
-      <p style="margin:6px 0 10px"><b>Electricity is decarbonising meaningfully</b> — renewable share has grown from ~19% to ~32% globally since 2000. Within electricity, replacing coal delivers ~2× the climate impact of replacing gas.</p>
-
-      <p style="margin:6px 0 10px"><b>But electricity is only ~20% of total energy.</b> The remaining 80% — industrial heat, transport, heating, agriculture — has barely transitioned. The IPCC's 2023 synthesis report (AR6) identifies these hard-to-electrify sectors as the current priority bottleneck for meeting climate targets.</p>
-
-      <p style="margin:6px 0 14px"><i>The data here shows the easy half of the problem. The harder half remains.</i></p>
-
-      <p style="margin:6px 0 6px"><b>Two-part takeaway:</b></p>
-      <ol style="margin:4px 0 10px 22px;padding:0">
-        <li style="margin:3px 0"><b>Replace high-carbon fuels first</b> — coal-first prioritisation within electricity.</li>
-        <li style="margin:3px 0"><b>Address total energy, not just electricity</b> — sector breadth beyond the power grid.</li>
-      </ol>
-
-      <p style="margin:14px 0 4px;color:var(--muted);font-size:12px">Source: Our World in Data — Energy dataset · 2000–2024 · 79 countries + World aggregate. Companion file: <code>world_energy_insights.md</code>.</p>
-    </div>
   </div>
 
 </main>
@@ -644,18 +645,49 @@ if (saved.country && DATA.countries.includes(saved.country)) {
 }
 if (saved.year && DATA.years.includes(Number(saved.year))) yearSel.value = saved.year;
 
+// Initialize filter state indicator
+updateFilterStateIndicator();
+
 regionSel.addEventListener('change', () => {
   populateCountrySelect(regionSel.value, countrySel.value);
   persistAndRender();
 });
 countrySel.addEventListener('change', persistAndRender);
 yearSel.addEventListener('change', persistAndRender);
+
+// Update filter state indicator
+function updateFilterStateIndicator() {
+  const region = regionSel.value || 'All regions';
+  const country = countrySel.value || '(select country)';
+  const year = yearSel.value || '(select year)';
+
+  const regionEl = document.getElementById('filterStateRegion');
+  const countryEl = document.getElementById('filterStateCountry');
+  const yearEl = document.getElementById('filterStateYear');
+  const sep1 = document.getElementById('filterStateSeparator1');
+  const sep2 = document.getElementById('filterStateSeparator2');
+
+  if (regionEl) regionEl.textContent = region;
+  if (countryEl) countryEl.textContent = country;
+  if (yearEl) yearEl.textContent = year;
+
+  // Show/hide region and separator based on whether it's "All regions"
+  if (sep1 && region === 'All regions') {
+    sep1.style.display = 'none';
+    if (regionEl) regionEl.style.display = 'none';
+  } else {
+    if (sep1) sep1.style.display = 'inline';
+    if (regionEl) regionEl.style.display = 'inline';
+  }
+}
+
 function persistAndRender() {
   localStorage.setItem('eDashFilters', JSON.stringify({
     region: regionSel.value,
     country: countrySel.value,
     year: Number(yearSel.value)
   }));
+  updateFilterStateIndicator();
   render();
 }
 
