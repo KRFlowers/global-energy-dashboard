@@ -35,12 +35,12 @@
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI",Roboto,sans-serif}
-  header{padding:14px 20px;border-bottom:1px solid var(--grid);display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:14px;background:var(--panel)}
-  h1{margin:0;font-size:32px;font-weight:700;color:var(--ink);line-height:1.1}
-  .dashboard-subtitle{font-size:18px;font-weight:400;font-style:italic;color:var(--muted);margin-top:4px}
+  header{padding:12px 20px;border-bottom:1px solid var(--grid);display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;background:var(--panel)}
+  h1{margin:0 0 2px 0;font-size:32px;font-weight:700;color:var(--ink);line-height:1.1}
+  .dashboard-subtitle{font-size:15px;font-weight:400;font-style:italic;color:var(--muted);margin-top:2px}
   .header-question{font-size:18px;font-weight:400;font-style:italic;color:var(--ink);margin-top:4px}
   .header-subtitle{font-size:12px;font-weight:400;color:var(--muted);margin-top:6px}
-  .filter-state-strip{padding:8px 0;border-top:1px solid var(--grid);border-bottom:1px solid var(--grid);background:transparent}
+  .filter-state-strip{padding:6px 0;border-top:1px solid var(--grid);border-bottom:1px solid var(--grid);background:transparent}
   .filter-state{font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .filter-state-label{color:var(--muted);font-weight:400}
   .filter-state-value{color:var(--ink);font-weight:600}
@@ -54,13 +54,13 @@
   select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(74,126,148,0.18)}
   /* Italic question-format subtitle directly under each chart's h3 title */
   .chart-subtitle{font-size:13px;font-weight:400;font-style:italic;color:var(--muted);margin:4px 0 0}
-  main{padding:10px 20px;display:grid;grid-template-columns:repeat(12,1fr);gap:10px}
+  main{padding:8px 20px;display:grid;grid-template-columns:repeat(12,1fr);gap:8px}
   .card{background:var(--panel);border:1px solid var(--grid);border-radius:10px;padding:8px 12px;box-shadow:0 1px 2px rgba(15,23,42,0.04)}
   .card h3{margin:0 0 4px;font-size:13px;color:var(--ink);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
   .card .sub{font-size:11px}
-  .kpi{padding:10px 12px}
+  .kpi{padding:8px 10px}
   .kpi-header-line{font-size:10px;color:var(--muted);margin-bottom:6px;line-height:1.3}
-  .kpi .v{font-size:28px;font-weight:700;line-height:1.1}
+  .kpi .v{font-size:22px;font-weight:700;line-height:1.1}
   .kpi .l{font-size:12px;color:var(--muted)}
   .kpi .delta{font-size:11px;margin-top:4px;color:var(--muted)}
   .pos{color:#22c55e}.neg{color:#ef4444}
@@ -94,7 +94,7 @@
 
 <header>
   <div style="flex:1;display:flex;flex-direction:column;gap:6px">
-    <h1>Global Renewable Electricity, 2000–2024</h1>
+    <h1>Global Renewable Electricity Trends</h1>
     <div class="dashboard-subtitle">How are countries moving toward renewables?</div>
   </div>
   <div class="controls" style="flex-shrink:0">
@@ -784,10 +784,9 @@ function render() {
   const idx = s.years.indexOf(year);
   const idx5 = Math.max(0, idx - 5);
 
-  // KPIs — World-based, single row of 5. Value = current year, delta = change since 2000.
-  const w = DATA.series['World'];
-  const wIdx = w ? w.years.indexOf(year) : -1;
-  const wIdx2000 = 0;  // 2000 is the first year in the dataset
+  // KPIs — Show selected country data, single row of 5. Value = current year, delta = change since 2000.
+  const kpiIdx = s ? s.years.indexOf(year) : -1;
+  const kpiIdx2000 = s ? s.years.indexOf(2000) : -1;
 
   // Format helpers — current value as "X.X%", change as "▲ X pp since 2000" (▼ for decrease).
   function fmtVal(v) {
@@ -801,7 +800,7 @@ function render() {
     return `${arrow} ${sign}${Math.abs(d).toFixed(0)} pp since 2000`;
   }
 
-  // Each KPI: [DOM-id base, World series-key for current value, World series-key for 2000 baseline]
+  // Each KPI: [DOM-id base, series-key for current value, series-key for 2000 baseline]
   // (current and baseline share the same key — value at different indices)
   const KPI_DEFS = [
     ['kpi-renew-e',  'renew_elec'],
@@ -811,10 +810,10 @@ function render() {
     ['kpi-renew-te', 'renew_energy']
   ];
 
-  if (w && wIdx >= 0) {
+  if (s && kpiIdx >= 0 && kpiIdx2000 >= 0) {
     for (const [id, key] of KPI_DEFS) {
-      const curr = w[key][wIdx];
-      const base = w[key][wIdx2000];
+      const curr = s[key][kpiIdx];
+      const base = s[key][kpiIdx2000];
       document.getElementById(id).textContent = fmtVal(curr);
       document.getElementById(id + '-d').textContent = fmtChangeSince2000(curr, base);
     }
