@@ -1,7 +1,5 @@
 # Global Renewable Electricity Trends Dashboard
 
-*This dashboard is a prototype and currently runs locally. Live hosting is planned in a future iteration.*
-
 ## Project Overview
 
 Electricity generated from renewable sources has more than doubled since 2000. The global share of renewable electricity increased from roughly 19% to 32%, driven largely by solar and wind power. However, the pace and mix of adoption vary significantly across countries.
@@ -13,6 +11,8 @@ The dashboard was built as a standalone HTML application using Claude Code and i
 **Screenshots:**
 ![Dashboard Overview - KPIs and Choropleth Map](images/dashboard1.png)
 ![Dashboard Detail - Charts and Comparisons](images/dashboard2.png)
+
+*This dashboard is a prototype and currently runs locally. Live hosting is planned in a future iteration.*
 
 ---
 
