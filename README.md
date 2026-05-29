@@ -72,6 +72,7 @@ The final dashboard includes nine visualizations designed to show global renewab
 
 ## Next Steps
 
+- Deploy the dashboard for public access.
 - Rebuild the dashboard in Tableau or Power BI to reflect the same story in standard business BI tools.
 - Source sector-level energy data from IEA or Climate TRACE to directly visualize the hard-to-electrify sectors claim rather than relying on the IPCC reference.
 - Explore adding emissions data alongside renewable share to show absolute emissions reductions.
