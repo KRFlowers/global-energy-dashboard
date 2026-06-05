@@ -197,7 +197,6 @@
       <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:#ACACAC;border-radius:2px;display:inline-block"></span>Fossil</span>
       <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:#5F95AC;border-radius:2px;display:inline-block"></span>Renewables</span>
       <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:#DCB858;border-radius:2px;display:inline-block"></span>Nuclear</span>
-      <span class="sub" style="font-size:10px;color:var(--muted);margin-left:8px">hover for source breakdown</span>
     </div>
     <div class="chart-wrap" style="height:200px"><canvas id="mixArea"></canvas></div>
   </div>
@@ -836,18 +835,17 @@ function render() {
   // Nuclear = mustard. Fossils = grays (dark → light).
   const FULL_ORDER = [
     // Fossils — tight gray range, Gas lightened further to read as clean light gray
-    // and stay clearly distinct from the mustard Nuclear band sitting above it.
     {label:'Coal',              data:s.coal,     color:'#B2B2B2'},  // bottom
     {label:'Oil',               data:s.oil,      color:'#ACACAC'},  // middle
     {label:'Gas',               data:s.gas,      color:'#C0C0C0'},  // top of fossils — clean light gray
-    // Nuclear — slightly lighter, gentler mustard
-    {label:'Nuclear',           data:s.nuclear,  color:'#DCB858'},
-    // Renewables on top: Other → Biofuel → Hydro → Wind → Solar (solar at the very top, lightest)
-    {label:'Other renewables',  data:otherRenew, color:'#2E5A6E'},
-    {label:'Biofuel',           data:s.biofuel,  color:'#4A7E94'},
-    {label:'Hydro',             data:s.hydro,    color:'#5F95AC'},
-    {label:'Wind',              data:s.wind,     color:'#87B2C5'},
+    // Renewables: Solar → Wind → Hydro → Biofuel → Other
     {label:'Solar',             data:s.solar,    color:'#B0CBD7'},
+    {label:'Wind',              data:s.wind,     color:'#87B2C5'},
+    {label:'Hydro',             data:s.hydro,    color:'#5F95AC'},
+    {label:'Biofuel',           data:s.biofuel,  color:'#4A7E94'},
+    {label:'Other renewables',  data:otherRenew, color:'#2E5A6E'},
+    // Nuclear — at the very top
+    {label:'Nuclear',           data:s.nuclear,  color:'#DCB858'},
   ];
 
   // 100% stacked AREA chart (was bar) — smooth continuous bands, gridlines show through
@@ -859,7 +857,7 @@ function render() {
       datasets: FULL_ORDER.map(src => ({
         label: src.label,
         data: src.data,
-        backgroundColor: src.color + 'F2',  // 95% opacity — nearly solid, prevents color bleed
+        backgroundColor: src.color,
         borderColor: src.color,
         borderWidth: 0.5,
         fill: true,
@@ -887,7 +885,30 @@ function render() {
         ...baseOpts.plugins,
         legend: { display: false },   // simplified custom 3-item HTML legend lives above the chart
         annotation: PARIS_ANNOTATION,  // just the Paris marker — gridlines now native
-        tooltip:{ mode:'index', intersect:false }
+        tooltip:{
+          mode:'index', intersect:false,
+          itemSort: function(a, b) {
+            // Order: Nuclear first, then Renewables (Other → Biofuel → Hydro → Wind → Solar), then Fossils
+            const nuclearLabels = ['Nuclear'];
+            const renewableLabels = ['Other renewables', 'Biofuel', 'Hydro', 'Wind', 'Solar'];
+            const fossilLabels = ['Coal', 'Oil', 'Gas'];
+
+            const aLabel = a.dataset.label;
+            const bLabel = b.dataset.label;
+
+            const aOrder = nuclearLabels.includes(aLabel) ? 0 : renewableLabels.includes(aLabel) ? 1 : 2;
+            const bOrder = nuclearLabels.includes(bLabel) ? 0 : renewableLabels.includes(bLabel) ? 1 : 2;
+
+            if (aOrder !== bOrder) return aOrder - bOrder;
+
+            // Within renewables category, use specific order
+            if (renewableLabels.includes(aLabel) && renewableLabels.includes(bLabel)) {
+              return renewableLabels.indexOf(aLabel) - renewableLabels.indexOf(bLabel);
+            }
+
+            return a.datasetIndex - b.datasetIndex;
+          }
+        }
       },
       interaction:{mode:'index',intersect:false}
     }
@@ -988,6 +1009,13 @@ function render() {
       plugins:{ ...baseOpts.plugins,
         annotation: PARIS_ANNOTATION,
         tooltip:{ mode:'index', intersect:false,
+          itemSort: function(a, b) {
+            // Order: Nuclear first, then Renewables, then Fossil
+            const order = {'Nuclear': 0, 'Renewables': 1, 'Fossil': 2};
+            const aOrder = order[a.dataset.label] ?? 3;
+            const bOrder = order[b.dataset.label] ?? 3;
+            return aOrder - bOrder;
+          },
           callbacks:{
             label:(c)=>{
               const v = c.dataset._raw ? c.dataset._raw[c.dataIndex] : c.raw;
